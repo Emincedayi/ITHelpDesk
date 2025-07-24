@@ -1,0 +1,101 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "4.2.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.Account": {
+      "version": "9.2.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "9.2.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.Identity": {
+      "version": "9.2.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "9.2.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "9.2.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "9.2.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "9.2.1",
+      "isInstalled": true
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "ITHelpDesk.Application": {
+      "path": "src/ITHelpDesk.Application/ITHelpDesk.Application.abppkg",
+      "folder": "src"
+    },
+    "ITHelpDesk.Application.Tests": {
+      "path": "test/ITHelpDesk.Application.Tests/ITHelpDesk.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "ITHelpDesk.Domain.Shared": {
+      "path": "src/ITHelpDesk.Domain.Shared/ITHelpDesk.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "ITHelpDesk.Application.Contracts": {
+      "path": "src/ITHelpDesk.Application.Contracts/ITHelpDesk.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "ITHelpDesk.HttpApi": {
+      "path": "src/ITHelpDesk.HttpApi/ITHelpDesk.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "ITHelpDesk.HttpApi.Client": {
+      "path": "src/ITHelpDesk.HttpApi.Client/ITHelpDesk.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "ITHelpDesk.EntityFrameworkCore.Tests": {
+      "path": "test/ITHelpDesk.EntityFrameworkCore.Tests/ITHelpDesk.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "ITHelpDesk.EntityFrameworkCore": {
+      "path": "src/ITHelpDesk.EntityFrameworkCore/ITHelpDesk.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "ITHelpDesk.TestBase": {
+      "path": "test/ITHelpDesk.TestBase/ITHelpDesk.TestBase.abppkg",
+      "folder": "test"
+    },
+    "ITHelpDesk.Domain.Tests": {
+      "path": "test/ITHelpDesk.Domain.Tests/ITHelpDesk.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "ITHelpDesk.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/ITHelpDesk.HttpApi.Client.ConsoleTestApp/ITHelpDesk.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "ITHelpDesk.DbMigrator": {
+      "path": "src/ITHelpDesk.DbMigrator/ITHelpDesk.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "ITHelpDesk.Blazor": {
+      "path": "src/ITHelpDesk.Blazor/ITHelpDesk.Blazor.abppkg",
+      "folder": "src"
+    },
+    "ITHelpDesk.Domain": {
+      "path": "src/ITHelpDesk.Domain/ITHelpDesk.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}
