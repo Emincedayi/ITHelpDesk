@@ -1,0 +1,193 @@
+﻿@page "/getticket"
+@page "/getticket/{id:guid}"
+@using ITHelpDesk.Tickets
+@using Volo.Abp.Application.Dtos
+@using Blazorise
+@using Blazorise.Bootstrap5
+@using Blazorise.Icons.FontAwesome
+@inject ITicketAppService TicketAppService
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+<Layout>
+    <PageTitle>Destek Talepleri</PageTitle>
+
+    @if (id.HasValue)
+    {
+        <Card Class="mt-4 mx-auto" Style="max-width: 600px;">
+            <CardHeader>
+                <Heading Size="HeadingSize.Is3">Destek Talebi Detayı</Heading>
+                @if (selectedTicket != null)
+                {
+                    <Text>Ticket ID: @selectedTicket.Id</Text>
+                }
+            </CardHeader>
+            <CardBody>
+                @if (selectedTicket == null)
+                {
+                    <Alert Color="Color.Warning">Ticket bulunamadı.</Alert>
+                }
+                else
+                {
+                    <Field>
+                        <Label>Ticket ID</Label>
+                        <TextEdit Text="@selectedTicket.Id.ToString()" ReadOnly />
+                        <!-- Eğer Ticket ID'nin sadece başlık altında görünmesini istiyorsanız, yukarıdaki Field bloğunu kaldırın -->
+                    </Field>
+                    <Field>
+                        <Label>Başlık</Label>
+                        <TextEdit Text="@selectedTicket.Title" ReadOnly />
+                    </Field>
+                    <Field>
+                        <Label>Açıklama</Label>
+                        <MemoEdit Text="@selectedTicket.Description" ReadOnly Rows="5" />
+                    </Field>
+                    <Field>
+                        <Label>Öncelik</Label>
+                        <TextEdit Text="@selectedTicket.Priority.ToString()" ReadOnly />
+                    </Field>
+                    <Field>
+                        <Label>Durum</Label>
+                        <TextEdit Text="@selectedTicket.Status.ToString()" ReadOnly />
+                    </Field>
+                    <Button Style="background-color: #8B4513; color: white;" Clicked="BackToList" Class="mt-3">
+                        <Blazorise.Icons.FontAwesome.Icon>"arrow - left"</Blazorise.Icons.FontAwesome.Icon>
+                        Geri
+                    </Button>
+                }
+            </CardBody>
+        </Card>
+    }
+    else
+    {
+        <Card Class="mt-4 mx-auto" Style="max-width: 800px;">
+            <CardHeader>
+                <Heading Size="HeadingSize.Is3">Destek Talepleri Listesi</Heading>
+            </CardHeader>
+            <CardBody>
+                @if (tickets == null || tickets.Count == 0)
+                {
+                    <Alert Color="Color.Info">Henüz destek talebi bulunmamaktadır.</Alert>
+                }
+                else
+                {
+                    <Table Striped Hoverable>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHeaderCell>Başlık</TableHeaderCell>
+                                <TableHeaderCell>Açıklama</TableHeaderCell>
+                                <TableHeaderCell>Öncelik</TableHeaderCell>
+                                <TableHeaderCell>Durum</TableHeaderCell>
+                                <TableHeaderCell>İşlemler</TableHeaderCell>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            @foreach (var ticket in tickets)
+                            {
+                                <TableRow>
+                                    <TableRowCell>@ticket.Title</TableRowCell>
+                                    <TableRowCell>@(ticket.Description.Length > 50 ? ticket.Description.Substring(0, 50) + "..." : ticket.Description)</TableRowCell>
+                                    <TableRowCell>@ticket.Priority</TableRowCell>
+                                    <TableRowCell>@ticket.Status</TableRowCell>
+                                    <TableRowCell>
+                                        <Button Style="background-color: #8B4513; color: white;" Clicked="@(() => ViewTicket(ticket.Id))">
+                                            <Blazorise.Icons.FontAwesome.Icon>"eye"</Blazorise.Icons.FontAwesome.Icon>
+                                            Detay
+                                        </Button>
+                                    </TableRowCell>
+                                </TableRow>
+                            }
+                        </TableBody>
+                    </Table>
+                    <div class="d-flex justify-content-between mt-3">
+                        <Button Style="background-color: #8B4513; color: white;" Disabled="@(CurrentPage <= 1)" Clicked="PreviousPage">
+                            <Blazorise.Icons.FontAwesome.Icon>"chevron - left"</Blazorise.Icons.FontAwesome.Icon>
+                            Önceki
+                        </Button>
+                        <span>Sayfa @CurrentPage / @TotalPages (Toplam @TotalCount ticket)</span>
+                        <Button Style="background-color: #8B4513; color: white;" Disabled="@(CurrentPage >= TotalPages)" Clicked="NextPage">
+                            <Blazorise.Icons.FontAwesome.Icon>"chevron - right"</Blazorise.Icons.FontAwesome.Icon>
+                            Sonraki
+                        </Button>
+                    </div>
+                }
+            </CardBody>
+        </Card>
+    }
+</Layout>
+
+@code {
+    [Parameter]
+    public Guid? id { get; set; }
+
+    private List<TicketDto> tickets = new();
+    private TicketDto selectedTicket;
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 10;
+    private long TotalCount { get; set; }
+    private int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (id.HasValue)
+            {
+                selectedTicket = await TicketAppService.GetAsync(id.Value);
+                if (selectedTicket == null)
+                {
+                    await NotificationService.Warning("Belirtilen ticket bulunamadı.", "Uyarı");
+                }
+            }
+            else
+            {
+                await LoadTickets();
+            }
+        }
+        catch (Exception ex)
+        {
+            await NotificationService.Error($"Hata oluştu: {ex.Message}\nDetay: {ex.InnerException?.Message}", "Hata");
+        }
+    }
+
+    private async Task LoadTickets()
+    {
+        var input = new PagedAndSortedResultRequestDto
+        {
+            MaxResultCount = PageSize,
+            SkipCount = (CurrentPage - 1) * PageSize,
+            Sorting = null // Varsayılan sıralama
+        };
+        var pagedResult = await TicketAppService.GetListAsync(input);
+        tickets = pagedResult.Items.ToList();
+        TotalCount = pagedResult.TotalCount;
+    }
+
+    private async Task PreviousPage()
+    {
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            await LoadTickets();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (CurrentPage < TotalPages)
+        {
+            CurrentPage++;
+            await LoadTickets();
+        }
+    }
+
+    private void ViewTicket(Guid ticketId)
+    {
+        NavigationManager.NavigateTo($"/getticket/{ticketId}");
+    }
+
+    private void BackToList()
+    {
+        NavigationManager.NavigateTo("/getticket");
+    }
+}

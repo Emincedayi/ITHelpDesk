@@ -1,0 +1,115 @@
+﻿@page "/updateticket/{id:guid}"
+@using ITHelpDesk.Tickets
+@using Volo.Abp.Application.Dtos
+@using Blazorise
+@using Blazorise.Bootstrap5
+@using Blazorise.Icons.FontAwesome
+@inject ITicketAppService TicketAppService
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+<Layout>
+    <PageTitle>Destek Talebi Güncelle</PageTitle>
+
+    <Card Class="mt-4 mx-auto" Style="max-width: 600px;">
+        <CardHeader>
+            <Heading Size="HeadingSize.Is3">Destek Talebi Detayı</Heading>
+            @if (ticket != null)
+            {
+                <Text>Ticket ID: @ticket.Id</Text>
+            }
+        </CardHeader>
+        <CardBody>
+            @if (ticket == null)
+            {
+                <Alert Color="Color.Warning">Ticket bulunamadı.</Alert>
+            }
+            else
+            {
+                <Field>
+                    <Label>Başlık</Label>
+                    <TextEdit Text="@ticket.Title" ReadOnly />
+                </Field>
+                <Field>
+                    <Label>Açıklama</Label>
+                    <MemoEdit Text="@ticket.Description" ReadOnly Rows="5" />
+                </Field>
+                <Field>
+                    <Label>Öncelik</Label>
+                    <Select TValue="TicketPriority" SelectedValue="@ticket.Priority" SelectedValueChanged="@(value => ticket.Priority = value)">
+                        @foreach (var priority in Enum.GetValues(typeof(TicketPriority)).Cast<TicketPriority>())
+                        {
+                            <SelectItem Value="@priority">@priority</SelectItem>
+                        }
+                    </Select>
+                </Field>
+                <Field>
+                    <Label>Durum</Label>
+                    <Select TValue="TicketStatus" SelectedValue="@ticket.Status" SelectedValueChanged="@(value => ticket.Status = value)">
+                        @foreach (var status in Enum.GetValues(typeof(TicketStatus)).Cast<TicketStatus>())
+                        {
+                            <SelectItem Value="@status">@status</SelectItem>
+                        }
+                    </Select>
+                </Field>
+                <Button Style="background-color: #8B4513; color: white;" Clicked="OnUpdateTicket" Class="mt-3 me-2">
+                    <Blazorise.Icons.FontAwesome.Icon>"save"</Blazorise.Icons.FontAwesome.Icon>
+                    Güncelle
+                </Button>
+                <Button Style="background-color: #8B4513; color: white;" Clicked="BackToList" Class="mt-3">
+                    <Blazorise.Icons.FontAwesome.Icon>"arrow-left"</Blazorise.Icons.FontAwesome.Icon>
+                    Geri
+                </Button>
+            }
+        </CardBody>
+    </Card>
+</Layout>
+
+@code {
+    [Parameter]
+    public Guid id { get; set; }
+
+    private TicketDto ticket;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ticket = await TicketAppService.GetAsync(id);
+            if (ticket == null)
+            {
+                await NotificationService.Warning("Belirtilen ticket bulunamadı.", "Uyarı");
+            }
+        }
+        catch (Exception ex)
+        {
+            await NotificationService.Error($"Hata oluştu: {ex.Message}\nDetay: {ex.InnerException?.Message}", "Hata");
+        }
+    }
+
+    private async Task OnUpdateTicket()
+    {
+        try
+        {
+            // NOT: Backend'de UpdateAsync yerine başka bir metod kullanıyorsanız, aşağıyı değiştirin
+            // Örneğin, UpdateTicketAsync, EditAsync, vb.
+            await TicketAppService.ResolveAsync(
+                ticket.Id
+               
+            );
+            await NotificationService.Success("Ticket başarıyla güncellendi.", "Başarılı");
+            // Güncelleme sonrası ticket'ı yenile
+            ticket = await TicketAppService.GetAsync(ticket.Id);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await NotificationService.Error($"Güncelleme başarısız: {ex.Message}\nDetay: {ex.InnerException?.Message}", "Hata");
+        }
+    }
+
+    private void BackToList()
+    {
+        NavigationManager.NavigateTo("/getticket");
+    }
+}
