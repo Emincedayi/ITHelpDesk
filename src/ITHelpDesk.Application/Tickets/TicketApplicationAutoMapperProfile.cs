@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ITHelpDesk.Comments;
 using ITHelpDesk.Tickets;
 
 namespace ITHelpDesk

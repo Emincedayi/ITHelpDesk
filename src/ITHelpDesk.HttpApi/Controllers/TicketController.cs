@@ -43,16 +43,14 @@ namespace ITHelpDesk.Controllers
         public Task<TicketDto> GetAsync(Guid id)
             => _ticketAppService.GetAsync(id);
 
-       /* [HttpPost("{id}/assign")]
-        public Task AssignAsync(Guid id, Guid assigneeId)
-            => _ticketAppService.AssignAsync(id, assigneeId);
 
-        [HttpPost("{id}/resolve")]
-        public Task ResolveAsync(Guid id)
-            => _ticketAppService.ResolveAsync(id);
+
+        [HttpPut("{id}/resolve")]
+        public Task<TicketDto> ResolveAsync(Guid id) => _ticketAppService.ResolveAsync(id);
+
 
         [HttpPost("{id}/close")]
-        public Task CloseAsync(Guid id)
-            => _ticketAppService.CloseAsync(id);*/
+        public Task<TicketDto> CloseAsync(Guid id)
+            => _ticketAppService.CloseAsync(id);
     }
 }

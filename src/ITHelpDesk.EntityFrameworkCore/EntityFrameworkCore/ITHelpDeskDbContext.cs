@@ -1,4 +1,6 @@
+using ITHelpDesk.Assigned;
 using ITHelpDesk.Categories;
+using ITHelpDesk.Comments;
 using ITHelpDesk.Tickets;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
@@ -51,7 +53,8 @@ public class ITHelpDeskDbContext :
    
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<Comment> Comments { get; set; }
-    public DbSet<Category> Categories { get; set; }
+    public DbSet<Category> Categories { get; set; } 
+    public DbSet<Assignee> Assigneds { get; set; }
 
 
     public ITHelpDeskDbContext(DbContextOptions<ITHelpDeskDbContext> options)
@@ -64,17 +67,21 @@ public class ITHelpDeskDbContext :
     {
         base.OnModelCreating(builder);
 
-       
         builder.Entity<Ticket>(b =>
         {
-            b.ToTable("Tickets");
-            b.ConfigureByConvention();
-
-            b.HasOne<IdentityUser>() // Relation
-             .WithMany()
-             .HasForeignKey(x => x.AssigneeId)
-             .IsRequired(false); // opsiyonel FK
+          //  b.Property(x => x.ClosedDate); // <-- sil veya yoruma al
         });
+
+        /*  builder.Entity<Ticket>(b =>
+          {
+              b.ToTable("Tickets");
+              b.ConfigureByConvention();
+
+              b.HasOne<IdentityUser>() 
+               .WithMany()
+               .HasForeignKey(x => x.AssigneeId)
+               .IsRequired(false); 
+          });*/
 
         builder.ConfigurePermissionManagement();
         builder.ConfigureSettingManagement();

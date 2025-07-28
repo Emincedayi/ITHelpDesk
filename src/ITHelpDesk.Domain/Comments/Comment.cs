@@ -1,7 +1,7 @@
 ﻿using System;
 using Volo.Abp.Domain.Entities.Auditing;
 
-namespace ITHelpDesk.Tickets
+namespace ITHelpDesk.Comments
 {
     public class Comment : FullAuditedEntity<Guid>
     {

@@ -13,6 +13,6 @@ namespace ITHelpDesk.Categories
         }
 
        
-        public Category() { }
+     //   public Category() { }
     }
 }

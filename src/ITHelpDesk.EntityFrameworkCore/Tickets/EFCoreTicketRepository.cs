@@ -1,95 +1,10 @@
-﻿
-/*using ITHelpDesk.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
-using Volo.Abp.EntityFrameworkCore;
-
-namespace ITHelpDesk.Tickets
-{
-    public class EFCoreTicketRepository : EfCoreRepository<ITHelpDeskDbContext, Ticket, Guid>, ITicketRepository
-    {
-        public EFCoreTicketRepository(IDbContextProvider<ITHelpDeskDbContext> dbContextProvider)
-            : base(dbContextProvider) { }
-
-        public async Task<Ticket> CreateAsync(string Title, string Description, TicketPriority Priority, TicketStatus Status, Guid? AssigneeId, Guid CategoryId)
-        {
-            var dbContext = await GetDbContextAsync(); 
-            var ticket = new Ticket { Title = Title, Description = Description, 
-                Priority = Priority, Status = Status, AssigneeId = AssigneeId, 
-              //  CategoryId = CategoryId// };
-
-            dbContext.Tickets.Add(ticket);
-            await dbContext.SaveChangesAsync();
-            return ticket;
-
-          
-        }
-
-        public Task DeleteAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Ticket> GetByIdAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<Ticket>> GetListAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<Ticket>> GetListByPriorityAsync(TicketPriority priority)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<Ticket>> GetListByStatusAsync(TicketStatus status)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<Ticket> UpdateAsync(Guid Id, string Title, string Description,
-            TicketPriority Priority, TicketStatus Status, Guid? AssigneeId,
-            Guid CategoryId) 
-
-        {
-            var dbContext = await GetDbContextAsync();
-            var ticket = await dbContext.Tickets.FindAsync(Id);
-            if (ticket == null)
-            {
-                throw new Exception($"Category with Id '{Id}' not found.");
-            }
-
-           // ticket.Id = Id;
-            ticket.Description = Description;
-            ticket.Title = Title;
-            ticket.Priority = Priority;
-            ticket.Status = Status;
-            ticket.AssigneeId = AssigneeId;
-           // ticket.CategoryId = CategoryId;
-
-            dbContext.Tickets.Update(ticket);
-            await dbContext.SaveChangesAsync();
-
-            return ticket; 
-
-
-         }
-}
-}
-
-*/
-
+﻿using AutoMapper.Internal.Mappers;
 using ITHelpDesk.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
+
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -103,11 +18,64 @@ namespace ITHelpDesk.Tickets
         {
         }
 
-        public Task<Ticket> GetWithCommentsAsync(Guid id)
+        public async Task<Ticket> ChangeStatus(Guid id, TicketStatus status)
         {
-            throw new NotImplementedException();
+            var ticket = await GetAsync(id);
+            
+
+            ticket.Status = status;
+            
+            return ticket;
         }
+        public async Task<Ticket> ResolveAsync(Guid ticketId)
+        {
+            var ticket = await GetAsync(ticketId);
+
+            ticket.Resolve();
+
+            await UpdateAsync(ticket);
+
+            return ticket;
+        }
+
+        public async Task<Ticket> GetWithCommentsAsync(Guid id)
+        {
+            var dbContext = await GetDbContextAsync();
+
+            return await dbContext.Tickets
+                .Include(t => t.Comments) 
+                .FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+        public  async Task<List<Ticket>> GetListAsync(int skipCount, int maxResultCount, string sorting)
+        {
+            var query = await GetQueryableAsync();
+
+            // Sıralama, atlama ve alma işlemleri uygulanıyor
+            query = (System.Linq.IQueryable<Ticket>)query.OrderBy(sorting ?? "CreationTime DESC")
+                         .Skip(skipCount)
+                         .Take(maxResultCount);
+
+            // Manuel olarak listeye ekleniyor
+            var result = new List<Ticket>();
+
+            await foreach (var item in query.AsAsyncEnumerable())
+            {
+                result.Add(item);
+            }
+
+            return result;
+        }
+
+
+        public  async Task<int> GetCountAsync()
+        {
+            var query = await GetQueryableAsync();
+            return await query.CountAsync();
+        }
+
     }
 }
+
 
 

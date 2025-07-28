@@ -1,5 +1,7 @@
-﻿using System;
+﻿using ITHelpDesk.Comments;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.Identity;
@@ -14,7 +16,8 @@ namespace ITHelpDesk.Tickets
         public string Description { get; set; }
         public TicketPriority Priority { get; set; }
         public TicketStatus Status { get; set; }
-        public Guid? AssigneeId { get;  set; }
+       // public DateTime ClosedDate { get;  set; }
+      //  public Guid? AssigneeId { get;  set; }
 
        
         public Guid CategoryId { get; set; }
@@ -37,20 +40,51 @@ namespace ITHelpDesk.Tickets
         }
 
 
-        public void Assign(Guid assigneeId)
+        /* public void Assign(Guid assigneeId)
+         {
+             AssigneeId = assigneeId;
+         }
+
+         public void Resolve()
+         {
+             Status = TicketStatus.Resolved;
+         }
+
+         public void Close()
+         {
+             Status = TicketStatus.Closed;
+         }*/
+
+        public void StartProgress()
         {
-            AssigneeId = assigneeId;
+            if (Status != TicketStatus.Open)
+            {
+                throw new Exception("Only open tickets can be moved to In Progress.");
+            }
+            Status = TicketStatus.InProgress;
         }
 
         public void Resolve()
         {
+            if (Status != TicketStatus.InProgress)
+            {
+                throw new Exception("Only in-progress tickets can be resolved.");
+            }
             Status = TicketStatus.Resolved;
+          
         }
 
         public void Close()
         {
+            if (Status != TicketStatus.Resolved)
+            {
+                throw new Exception("ResolvedSecIdKısmını");
+               
+            }
             Status = TicketStatus.Closed;
+          
         }
+
     }
 }
 

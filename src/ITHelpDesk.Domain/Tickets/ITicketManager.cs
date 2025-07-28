@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Volo.Abp.Domain.Services;
 
 namespace ITHelpDesk.Tickets
 {
-    public enum TicketStatus
+    public interface ITicketManager
     {
-        Open , InProgress, Resolved , Closed
+        void CheckStatusRule(TicketStatus status);
+        
     }
 }
