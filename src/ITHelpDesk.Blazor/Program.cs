@@ -1,10 +1,13 @@
-using System;
-using System.Threading.Tasks;
+using Blazorise;
+
+using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
+using System;
+using System.Threading.Tasks;
 
 namespace ITHelpDesk.Blazor;
 
@@ -21,7 +24,18 @@ public class Program
         {
             Log.Information("Starting web host.");
             var builder = WebApplication.CreateBuilder(args);
-            builder.Host
+
+            builder.Services
+               .AddBlazorise(options =>
+               {
+                   options.Immediate = true;
+               })
+               
+               .AddFontAwesomeIcons();
+
+            builder.Host 
+
+
                 .AddAppSettingsSecretsJson()
                 .UseAutofac()
                 .UseSerilog((context, services, loggerConfiguration) =>
@@ -40,11 +54,16 @@ public class Program
                         .WriteTo.Async(c => c.AbpStudio(services));
                 });
             await builder.AddApplicationAsync<ITHelpDeskBlazorModule>();
-            var app = builder.Build();
+            var app = builder.Build(); 
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+/*
+            app.Services
+                .UseBootstrapProviders();
+                .UseFontAwesomeIcons();*/
 
 
             await app.InitializeApplicationAsync();

@@ -1,0 +1,114 @@
+﻿@page "/create-ticket"
+@using ITHelpDesk.Tickets
+@using ITHelpDesk.Categories
+@using Blazorise
+@using Blazorise.Bootstrap5
+@using Blazorise.Icons.FontAwesome
+@inject ITicketAppService TicketAppService
+@inject INotificationService NotificationService
+
+<Layout>
+    <PageTitle>Yeni Destek Talebi</PageTitle>
+
+    <Card Class="mt-4 mx-auto" Style="max-width: 600px;">
+        <CardHeader>
+            <Heading Size="HeadingSize.Is3">Destek Talebi Oluştur</Heading>
+        </CardHeader>
+
+        <CardBody>
+            <Validations @ref="validationsRef" Mode="ValidationMode.Auto">
+                <Validation Validator="ValidateRequired">
+                    <Field>
+                        <Label>Başlık</Label>
+                        <TextEdit @bind-Text="Title" Placeholder="Örn: Yazıcı çalışmıyor" />
+                        <Feedback>
+                            <ValidationError>Başlık zorunludur.</ValidationError>
+                        </Feedback>
+                    </Field>
+                </Validation>
+
+                <Validation Validator="ValidateRequired">
+                    <Field>
+                        <Label>Açıklama</Label>
+                        <MemoEdit @bind-Text="Description" Placeholder="Detaylı açıklama giriniz..." />
+                        <Feedback>
+                            <ValidationError>Açıklama zorunludur.</ValidationError>
+                        </Feedback>
+                    </Field>
+                </Validation>
+
+                <Field>
+                    <Label>Öncelik</Label>
+                    <Select TValue="TicketPriority" @bind-SelectedValue="Priority">
+                        <SelectItem Value="TicketPriority.Low">Düşük</SelectItem>
+                        <SelectItem Value="TicketPriority.Medium">Orta</SelectItem>
+                        <SelectItem Value="TicketPriority.High">Yüksek</SelectItem>
+                    </Select>
+                </Field>
+
+                <Field>
+                    <Label>Durum</Label>
+                    <Select TValue="TicketStatus" @bind-SelectedValue="Status">
+                        <SelectItem Value="TicketStatus.Open">Açık</SelectItem>
+                        <SelectItem Value="TicketStatus.InProgress">İşlemde</SelectItem>
+                        <SelectItem Value="TicketStatus.Closed">Kapalı</SelectItem>
+                    </Select>
+                </Field>
+
+                <Button Style="background-color: #8B4513; color: white;" Clicked="OnCreateTicket" Class="mt-3">
+                    <Blazorise.Icons.FontAwesome.Icon>"save"</Blazorise.Icons.FontAwesome.Icon>
+                    Oluştur
+                </Button>
+            </Validations>
+        </CardBody>
+    </Card>
+</Layout>
+
+@code {
+    private Validations validationsRef;
+    private string Title;
+    private string Description;
+    private TicketPriority Priority = TicketPriority.Medium;
+    private TicketStatus Status = TicketStatus.Open;
+    private readonly Guid CategoryId = new Guid("c03d437f-888a-48a1-9f70-32c02a2b012a");
+
+    private void ValidateRequired(ValidatorEventArgs args)
+    {
+        args.Status = string.IsNullOrWhiteSpace(args.Value?.ToString()) ? ValidationStatus.Error : ValidationStatus.Success;
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    private async Task OnCreateTicket()
+    {
+        if (await validationsRef.ValidateAll())
+        {
+            try
+            {
+                await TicketAppService.CreateAsync(Title, Description, Priority, Status, CategoryId);
+                await NotificationService.Success("Destek talebi başarıyla oluşturuldu!", "Başarılı");
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                await NotificationService.Error($"Hata oluştu: {ex.Message}\nDetay: {ex.InnerException?.Message}", "Hata");
+            }
+        }
+        else
+        {
+            await NotificationService.Warning("Lütfen başlık ve açıklama alanlarını doldurunuz.", "Uyarı");
+        }
+    }
+
+    private void ClearForm()
+    {
+        Title = "";
+        Description = "";
+        Priority = TicketPriority.Medium;
+        Status = TicketStatus.Open;
+        validationsRef?.ClearAll();
+    }
+}
