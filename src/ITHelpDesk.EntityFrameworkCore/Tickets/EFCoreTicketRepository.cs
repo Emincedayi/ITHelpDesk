@@ -4,18 +4,30 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq.Dynamic.Core;
-
+using System.Linq;
 using System.Threading.Tasks;
+using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.Identity;
+using Volo.Abp.Users;
 
 namespace ITHelpDesk.Tickets
 {
     public class EfCoreTicketRepository : EfCoreRepository<ITHelpDeskDbContext, Ticket, Guid>, ITicketRepository
     {
-        public EfCoreTicketRepository(IDbContextProvider<ITHelpDeskDbContext> dbContextProvider)
+        /* public EfCoreTicketRepository(IDbContextProvider<ITHelpDeskDbContext> dbContextProvider)
+             : base(dbContextProvider)
+         {
+         }*/
+        private readonly IRepository<IdentityUser, Guid> _userRepository;
+
+        public EfCoreTicketRepository(
+            IDbContextProvider<ITHelpDeskDbContext> dbContextProvider,
+            IRepository<IdentityUser, Guid> userRepository)
             : base(dbContextProvider)
         {
+            _userRepository = userRepository;
         }
 
         public async Task<Ticket> ChangeStatus(Guid id, TicketStatus status)
@@ -67,12 +79,43 @@ namespace ITHelpDesk.Tickets
             return result;
         }
 
-
         public  async Task<int> GetCountAsync()
         {
             var query = await GetQueryableAsync();
             return await query.CountAsync();
         }
+
+
+     /*   public async Task<List<Ticket>> GetStaleTicketsAsync()
+        {
+            var threshold = DateTime.UtcNow.AddHours(-6);
+            var query = await GetQueryableAsync();
+
+            var tickets = await query
+                .Where(t => t.Status == TicketStatus.InProgress && t.LastUpdatedAt != null && t.LastUpdatedAt <= threshold)
+                .ToListAsync();*/
+
+            // UserEmail'i IdentityUser'dan al (opsiyonel, UserId kullanıyorsanız)
+          /*  foreach (var ticket in tickets)
+            {
+                if (ticket.UserId.HasValue)
+                {
+                    var user = await _userRepository.FindAsync(ticket.UserId.Value);
+                    if (user != null)
+                    {
+                        ticket.UserEmail = user.Email;
+                    }
+                }
+            }
+
+            return tickets;
+        }*/
+
+
+
+
+
+
 
     }
 }

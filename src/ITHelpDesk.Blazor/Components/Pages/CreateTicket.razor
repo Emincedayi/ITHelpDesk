@@ -71,6 +71,7 @@
     private TicketPriority Priority = TicketPriority.Medium;
     private TicketStatus Status = TicketStatus.Open;
     private readonly Guid CategoryId = new Guid("c03d437f-888a-48a1-9f70-32c02a2b012a");
+    private Modal modalRef;
 
     private void ValidateRequired(ValidatorEventArgs args)
     {

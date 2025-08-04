@@ -103,7 +103,24 @@ namespace ITHelpDesk.Tickets
             return ObjectMapper.Map<Ticket, TicketDto>(ticket);
         }
 
-     
+        public async Task<TicketDto> UpdateAsync(Guid ticketId, UpdateTicketDto input)
+        {
+            var ticket = await _ticketRepository.FindAsync(input.Id);
+
+            if(ticket == null)
+            {
+                throw new Exception("Ticket Bulunamadı");
+            }
+            
+            ticket.Status = input.Status;
+            ticket.Title = input.Title;
+            ticket.Description = input.Description;
+            ticket.Priority = input.Priority;
+            ticket.CategoryId = input.CategoryId;//domn dto tamamla
+           var response =   await _ticketRepository.UpdateAsync(ticket);
+
+            return ObjectMapper.Map<Ticket, TicketDto>(ticket);
+        }
     }
 }
 

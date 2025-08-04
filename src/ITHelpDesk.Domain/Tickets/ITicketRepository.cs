@@ -11,7 +11,7 @@ namespace ITHelpDesk.Tickets
         Task<Ticket> ChangeStatus(Guid id, TicketStatus status);
         Task<Ticket> ResolveAsync(Guid ticketId);
         Task<List<Ticket>> GetListAsync(int skipCount, int maxResultCount, string sorting);
-       
+     //   Task<List<Ticket>> GetStaleTicketsAsync();
         Task<int> GetCountAsync();
 
     }

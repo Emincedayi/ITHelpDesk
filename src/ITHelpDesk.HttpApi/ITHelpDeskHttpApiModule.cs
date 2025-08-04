@@ -26,6 +26,8 @@ public class ITHelpDeskHttpApiModule : AbpModule
     {
         ConfigureLocalization();
     }
+     
+
 
     private void ConfigureLocalization()
     {

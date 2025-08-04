@@ -12,7 +12,7 @@ namespace ITHelpDesk.Tickets
               TicketPriority Priority,
               TicketStatus Status,
               Guid CategoryId);
-     
+        
         Task<TicketDto> GetAsync(Guid id);
         //  Task AssignAsync(Guid ticketId, Guid assigneeId); 
         Task<PagedResultDto<TicketDto>> GetListAsync(PagedAndSortedResultRequestDto input);
@@ -21,6 +21,8 @@ namespace ITHelpDesk.Tickets
         Task<TicketDto> ResolveAsync(Guid ticketId);
 
         Task <TicketDto>CloseAsync(Guid ticketId);
+        Task<TicketDto> UpdateAsync(Guid ticketId, UpdateTicketDto input);
+
     }
 }
 

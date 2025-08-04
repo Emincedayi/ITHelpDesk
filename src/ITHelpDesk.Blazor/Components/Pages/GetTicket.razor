@@ -94,6 +94,10 @@
                                             <Blazorise.Icons.FontAwesome.Icon>"eye"</Blazorise.Icons.FontAwesome.Icon>
                                             Detay
                                         </Button>
+                                        <Button Style="background-color: #8B4513; color: white;" Clicked="@(() => ShowModal(ticket))" Class="mt-3">
+                                            <Blazorise.Icons.FontAwesome.Icon>"arrow - left"</Blazorise.Icons.FontAwesome.Icon>
+                                            Düzenle
+                                        </Button>
                                     </TableRowCell>
                                 </TableRow>
                             }
@@ -114,6 +118,40 @@
             </CardBody>
         </Card>
     }
+
+
+    <Modal @ref="modalRef" >
+        <ModalContent Centered>
+            <ModalHeader>
+                <ModalTitle>Employee edit</ModalTitle>
+                <CloseButton />
+            </ModalHeader>
+            <ModalBody>
+                <Field>
+                    <FieldLabel>Status</FieldLabel>
+                    <Dropdown >
+                        <DropdownToggle Color="Color.Primary">
+                            Dropdown
+                        </DropdownToggle>
+                        @foreach (var status in StatusOptions)
+                        {
+                            <DropdownItem @onclick="() => _selectedStatus = status">
+                                @status
+                            </DropdownItem>
+                        }
+                    </Dropdown>
+                </Field>
+                <Field>
+                    <FieldLabel>Surname</FieldLabel>
+                    <TextEdit Placeholder="Enter surname..." />
+                </Field>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+                <Button Color="Color.Primary" Clicked="@HideModal">Save Changes</Button>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
 </Layout>
 
 @code {
@@ -126,7 +164,10 @@
     private int PageSize { get; set; } = 10;
     private long TotalCount { get; set; }
     private int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
-
+    private Modal modalRef;
+    TicketStatus _selectedStatus;
+    IEnumerable<TicketStatus> StatusOptions => Enum.GetValues(typeof(TicketStatus)).Cast<TicketStatus>();
+    private UpdateTicketDto _selectedDto = new();
     protected override async Task OnInitializedAsync()
     {
         try
@@ -149,7 +190,25 @@
             await NotificationService.Error($"Hata oluştu: {ex.Message}\nDetay: {ex.InnerException?.Message}", "Hata");
         }
     }
+    private Task ShowModal(TicketDto ticket)
+    {
+        _selectedDto = new UpdateTicketDto
+            {
+                CategoryId = ticket.CategoryId,
+                Description = ticket.Description,
+                Priority = ticket.Priority,
+                Status = ticket.Status,
+                Title = ticket.Title
 
+
+            };
+        return modalRef.Show();
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
     private async Task LoadTickets()
     {
         var input = new PagedAndSortedResultRequestDto
@@ -189,5 +248,9 @@
     private void BackToList()
     {
         NavigationManager.NavigateTo("/getticket");
+    }
+    private async Task UpdateTicket()
+    {
+        await TicketAppService.UpdateAsync(ticketId:_selectedDto.Id,_selectedDto);
     }
 }

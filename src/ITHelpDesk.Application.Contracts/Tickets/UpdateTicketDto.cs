@@ -13,7 +13,7 @@ namespace ITHelpDesk.Tickets
         public string Description { get; set; }
         public TicketPriority Priority { get; set; }
         public TicketStatus Status { get; set; }
-        public Guid? AssigneeId { get; set; }
+      //  public Guid? AssigneeId { get; set; }
         public Guid CategoryId { get; set; }
     }
 }

@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ITHelpDesk.Domain\ITHelpDesk.Domain.csproj" />
     <ProjectReference Include="..\ITHelpDesk.Application.Contracts\ITHelpDesk.Application.Contracts.csproj" />
+    <ProjectReference Include="..\ITHelpDesk.EntityFrameworkCore\ITHelpDesk.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

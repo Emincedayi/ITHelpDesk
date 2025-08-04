@@ -1,0 +1,147 @@
+﻿@page "/ticketstatus"
+@using ITHelpDesk.Tickets
+@using Volo.Abp.Application.Dtos
+@using Blazorise
+@using Blazorise.Bootstrap5
+@using Blazorise.Icons.FontAwesome
+@inject ITicketAppService TicketAppService
+@inject INotificationService NotificationService
+
+<Layout>
+    <PageTitle>Ticket Durum Güncelle - Çözüm</PageTitle>
+
+    <Card Class="mt-4 mx-auto" Style="max-width: 600px;">
+        <CardHeader>
+            <Heading Size="HeadingSize.Is3">Ticket Durum Güncelle - Çözüm</Heading>
+        </CardHeader>
+        <CardBody>
+            <Validations @ref="validationsRef" Mode="ValidationMode.Auto">
+                <Validation Validator="ValidateTicketId">
+                    <Field>
+                        <Label>Ticket ID</Label>
+                        <TextEdit @bind-Text="ticketIdInput" Placeholder="Ticket ID giriniz (ör: 123e4567-e89b-12d3-a456-426614174000)" Changed="@OnTicketIdChanged" />
+                        <Feedback>
+                            <ValidationError>Geçerli bir Ticket ID giriniz.</ValidationError>
+                        </Feedback>
+                    </Field>
+                </Validation>
+
+                @if (errorMessage != null)
+                {
+                    <Alert Color="Color.Warning">@errorMessage</Alert>
+                }
+                @if (ticket != null)
+                {
+                    <Field>
+                        <Label>Mevcut Durum</Label>
+                        <TextEdit Text="@ticket.Status.ToString()" ReadOnly />
+                    </Field>
+                    @if (ticket.Status == TicketStatus.InProgress)
+                    {
+                        <Field>
+                            <Label>Yeni Durum</Label>
+                            <TextEdit Text="Çözüldü (Resolved)" ReadOnly />
+                        </Field>
+                    }
+                }
+
+                <Button Style="background-color: #8B4513; color: white;" Clicked="@UpdateStatus" Class="mt-3" Disabled="@(ticket == null || ticket.Status != TicketStatus.InProgress)">
+                    <Blazorise.Icons.FontAwesome.Icon>"save"</Blazorise.Icons.FontAwesome.Icon>
+                    Güncelle
+                </Button>
+            </Validations>
+        </CardBody>
+    </Card>
+
+
+
+</Layout>
+
+@code {
+    private Validations validationsRef;
+    private string ticketIdInput;
+    private TicketDto ticket;
+    private string errorMessage;
+
+    private void ValidateTicketId(ValidatorEventArgs args)
+    {
+        args.Status = Guid.TryParse(args.Value?.ToString(), out _) ? ValidationStatus.Success : ValidationStatus.Error;
+    }
+   
+    private async Task OnTicketIdChanged()
+    {
+        errorMessage = null;
+        ticket = null;
+
+        if (!string.IsNullOrWhiteSpace(ticketIdInput))
+        {
+            if (Guid.TryParse(ticketIdInput, out Guid ticketId))
+            {
+                try
+                {
+                    ticket = await TicketAppService.GetAsync(ticketId);
+                    if (ticket == null)
+                    {
+                        errorMessage = "Belirtilen ticket bulunamadı.";
+                        await NotificationService.Warning(errorMessage, "Uyarı");
+                    }
+                    else if (ticket.Status != TicketStatus.InProgress)
+                    {
+                        errorMessage = $"Bu ticket Çözüldü (Resolved) durumuna geçirilemez. Sadece İşlemde (InProgress) durumundaki ticket'lar çözülebilir. Mevcut durum: {ticket.Status}";
+                        await NotificationService.Warning(errorMessage, "Uyarı");
+                    }
+                }
+                catch (Exception ex)    
+                {
+                    errorMessage = $"Hata oluştu: {ex.Message}";
+                    if (ex.InnerException != null)
+                    {
+                        errorMessage += $"\nDetay: {ex.InnerException.Message}";
+                    }
+                    await NotificationService.Error(errorMessage, "Hata");
+                    ticket = null;
+                }
+            }
+            else
+            {
+                errorMessage = "Geçerli bir Ticket ID giriniz.";
+                await NotificationService.Warning(errorMessage, "Uyarı");
+            }
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UpdateStatus()
+    {
+        if (ticket != null && await validationsRef.ValidateAll() && ticket.Status == TicketStatus.InProgress)
+        {
+            try
+            {
+                await TicketAppService.ResolveAsync(ticket.Id);
+                await NotificationService.Success("Ticket durumu Çözüldü (Resolved) olarak güncellendi.", "Başarılı");
+                ticketIdInput = string.Empty;
+                ticket = null;
+                errorMessage = null;
+                validationsRef.ClearAll();
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Güncelleme başarısız: {ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $"\nDetay: {ex.InnerException.Message}";
+                }
+                await NotificationService.Error(errorMessage, "Hata");
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        else
+        {
+            errorMessage = ticket == null ? "Lütfen geçerli bir Ticket ID giriniz." : $"Bu ticket Çözüldü (Resolved) durumuna geçirilemez. Sadece İşlemde (InProgress) durumundaki ticket'lar çözülebilir. Mevcut durum: {ticket.Status}";
+            await NotificationService.Warning(errorMessage, "Uyarı");
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
