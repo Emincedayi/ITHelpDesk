@@ -1,7 +1,7 @@
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
-using Hangfire; // Hangfire için
-using Hangfire.PostgreSql; // PostgreSQL için
+using Hangfire; 
+using Hangfire.PostgreSql; 
 using ITHelpDesk.Application.Tickets; // TicketStatusCheckerJob için
 using ITHelpDesk.Blazor.Components;
 using ITHelpDesk.Blazor.HealthChecks;
@@ -40,8 +40,8 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.AutoMapper;
-using Volo.Abp.BackgroundJobs.Hangfire; // Hangfire için
-using Volo.Abp.Emailing; // E-posta için
+using Volo.Abp.BackgroundJobs.Hangfire; 
+using Volo.Abp.Emailing; 
 using Volo.Abp.FeatureManagement.Blazor.Server;
 using Volo.Abp.Hangfire;
 using Volo.Abp.Identity;

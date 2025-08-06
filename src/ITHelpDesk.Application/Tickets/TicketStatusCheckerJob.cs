@@ -23,7 +23,7 @@ namespace ITHelpDesk.Application.Tickets
 
         public override async Task ExecuteAsync(object args)
         {
-            var sixHoursAgo = DateTime.UtcNow.AddHours(-1);
+            var sixHoursAgo = DateTime.UtcNow.AddMinutes(-1);
             var tickets = await _dbContext.Tickets
                 .Where(t => t.Status == TicketStatus.InProgress)
                 .Where(t => t.LastModificationTime < sixHoursAgo || t.LastModificationTime == null)

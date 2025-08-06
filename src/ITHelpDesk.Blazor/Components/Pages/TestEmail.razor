@@ -1,0 +1,25 @@
+﻿@page "/test-email"
+@inject ITHelpDesk.Application.Tickets.EmailTestService EmailTestService
+@using Volo.Abp.AspNetCore.Components.Messages 
+
+
+<h3>E-posta Testi</h3>
+<button @onclick="SendTestEmail">Test E-postası Gönder</button>
+
+@code {
+    [Inject]
+    private IUiMessageService Notify { get; set; }
+
+    private async Task SendTestEmail()
+    {
+        try
+        {
+            await EmailTestService.SendTestEmailAsync();
+            await Notify.Success("Test e-postası gönderildi!");
+        }
+        catch (Exception ex)
+        {
+            await Notify.Error($"Hata: {ex.Message}");
+        }
+    }
+}
