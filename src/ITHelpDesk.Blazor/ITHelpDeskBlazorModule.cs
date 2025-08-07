@@ -349,7 +349,7 @@ namespace ITHelpDesk.Blazor
             RecurringJob.AddOrUpdate<TicketStatusCheckerJob>(
                 "CheckInProgressTickets",
                 job => job.ExecuteAsync(null),
-                Cron.Hourly);
+                Cron.Minutely);
         }
     }
 }

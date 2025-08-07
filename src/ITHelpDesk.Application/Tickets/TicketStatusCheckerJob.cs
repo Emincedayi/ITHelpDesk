@@ -1,13 +1,13 @@
-﻿using ITHelpDesk.Tickets;
+﻿using ITHelpDesk.EntityFrameworkCore;
+using ITHelpDesk.Tickets;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Emailing;
-
-using ITHelpDesk.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 namespace ITHelpDesk.Application.Tickets
 {
     public class TicketStatusCheckerJob : AsyncBackgroundJob<object>, ITransientDependency
@@ -31,11 +31,37 @@ namespace ITHelpDesk.Application.Tickets
 
             foreach (var ticket in tickets)
             {
-                await _emailSender.SendAsync(
-                    to: "memincedayi@gmail.com",
-                    subject: $"Ticket #{ticket.Id} Güncelleme Hatırlatması",
-                    body: $"Ticket '{ticket.Title}' (ID: {ticket.Id}) 1 saattir 'InProgress' statüsünde ve güncellenmedi. Lütfen ilgilenin."
-                );
+                await TestSmtpConnectionAsync(to: "memincedayi@gmail.com",
+                      subject: $"Ticket #{ticket.Id} Güncelleme Hatırlatması",
+                      body: $"Ticket '{ticket.Title}' (ID: {ticket.Id}) 1 saattir 'InProgress' statüsünde ve güncellenmedi. Lütfen ilgilenin.");
+            }
+        }
+
+        public async Task TestSmtpConnectionAsync(string to, string subject, string body)
+        {
+            try
+            {
+                var client = new SmtpClient("smtp.gmail.com", 587)
+                {
+                    EnableSsl = true,
+                    UseDefaultCredentials = false,
+                    Credentials = new System.Net.NetworkCredential("memincedayi@gmail.com", "nomvzbikriufpsim")
+                };
+                var message = new MailMessage
+                {
+                    From = new MailAddress("memincedayi@gmail.com", "HelpDesk"),
+                    Subject = subject,
+                    Body =body
+                };
+                message.To.Add(to);
+                await client.SendMailAsync(message);
+                Console.WriteLine("SMTP Test: Email sent successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SMTP Test Error: {ex.Message}");
+                if (ex.InnerException != null)
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
             }
         }
     }
